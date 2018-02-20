@@ -14,7 +14,7 @@ public class FazIlha : MonoBehaviour {
 
 
 	public GameObject prefabGrama, prefabAgua,prefabAreaFinal,prefabBoss;
-	public Interactable prefabMatoAlto;
+
 
 	public float percentAguaInicial = 40;
 	public int largura,altura;
@@ -28,6 +28,7 @@ public class FazIlha : MonoBehaviour {
 
 	ConstrutorMapa mapaIlha, mapaTesouroFinal;
 	Config.Point pontoBoss, pontoSpawn;
+	Area[,] matrizFinal;
 
 
 
@@ -35,10 +36,12 @@ public class FazIlha : MonoBehaviour {
 
 	public Area[,]  ConstroiIlha() {	
 		mapaIlha = new ConstrutorMapa (largura, altura, iteracoes, iteracoesDif, percentAguaInicial);
-		Area[,] matrizFinal = ColocaAreaFinal (mapaIlha.matrizMapa);
-		EscolheSpawnJogador (matrizFinal);
-		DesenhaMapa (matrizFinal);
+		mapaIlha.matrizMapa = ColocaAreaFinal (mapaIlha.matrizMapa);
 
+		EscolheSpawnJogador (mapaIlha.matrizMapa);
+		DesenhaMapa (mapaIlha);
+
+		matrizFinal = mapaIlha.matrizMapa;
 		return matrizFinal;
 		//DesenhaMapa(mapaIlha.matrizMapa);
 
@@ -52,6 +55,8 @@ public class FazIlha : MonoBehaviour {
 	public Config.Point GetPontoBoss(){
 		return pontoBoss;
 	}
+
+
 
 	/****************************/
 
@@ -106,6 +111,7 @@ public class FazIlha : MonoBehaviour {
 								mapaRetorno [c, l].tipo = BOSS;
 								mapaRetorno [c, l].dificuldade = 6;
 							}
+
 						}
 					}
 				}
@@ -232,10 +238,12 @@ public class FazIlha : MonoBehaviour {
 	}
 
 	
-	void DesenhaMapa(Area[,] matrizMapa){
+	void DesenhaMapa(ConstrutorMapa construtorMapa){
 		GameObject g;
+		Area[,] matrizMapa = construtorMapa.matrizMapa;
 		for (int linha, coluna = 0; coluna < largura; coluna++) {
 			for (linha = 0; linha < altura; linha++) {
+				matrizMapa [coluna, linha].vizinhosDificuldade = construtorMapa.VizinhosDificuldade (coluna, linha);
 				matrizMapa [coluna, linha].posicao = new Config.Point (coluna, linha);
 				if (matrizMapa [coluna, linha].tipo == GRAMA) {
 					g = Instantiate (prefabGrama, new Vector3 (coluna, linha), Quaternion.identity) as GameObject;
@@ -246,19 +254,23 @@ public class FazIlha : MonoBehaviour {
 					c.r = 0.2f * matrizMapa [coluna, linha].dificuldade;
 					g.GetComponent<SpriteRenderer> ().color = c;
 
+					/*
 					if (matrizMapa [coluna, linha].dificuldade == 2 && matrizMapa [coluna, linha].vizinhosDificuldade [1] >= 2) {
 						matrizMapa [coluna, linha].ColocaObjeto (prefabMatoAlto);
 					}
+					*/
 
 				} else if (matrizMapa [coluna, linha].tipo == AGUA) {
 					g = Instantiate (prefabAgua, new Vector3 (coluna, linha), Quaternion.identity) as GameObject;
 					matrizMapa [coluna, linha].objetoCena = g;
 
 				} else if (matrizMapa [coluna, linha].tipo == FINAL) {
+
 					g = Instantiate (prefabAreaFinal, new Vector3 (coluna, linha), Quaternion.identity) as GameObject;
 					matrizMapa [coluna, linha].objetoCena = g;
 
 				} else {
+					
 					g = Instantiate (prefabBoss, new Vector3 (coluna, linha), Quaternion.identity) as GameObject;
 					matrizMapa [coluna, linha].objetoCena = g;
 
@@ -471,11 +483,12 @@ public class ConstrutorMapa  {
 	}
 
 	//Retorna um vetor. [0] = mais dificeis, [1] = mais faceis, [2] = iguais, [3] = media
-	int[] VizinhosDificuldade(int c, int l){
+	// [4] = dificuldade 1, [5] =  dificuldade 2, [6] = dificuldade 3, [7] = dificuldade 4, [8] = dificuldade 5, [9] = dificuldade 6
+	public int[] VizinhosDificuldade(int c, int l){
 		
-		int[] vizinhos = new int[4];
+		int[] vizinhos = new int[10];
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < vizinhos.Length; i++) {
 			vizinhos [i] = 0;
 		}
 
@@ -499,7 +512,9 @@ public class ConstrutorMapa  {
 						vd = difMin;
 					} else {
 						vd = matrizMapa [x, y].dificuldade;
+
 					}
+						vizinhos [3 + vd]++;
 						if (vd > dif) {
 							vizinhos [0]++;
 						} else if (vd < dif) {
@@ -509,8 +524,6 @@ public class ConstrutorMapa  {
 						}
 						vizinhos [3]+=vd;
 						cont++;
-
-
 				}
 			}
 		}

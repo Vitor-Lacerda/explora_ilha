@@ -141,4 +141,9 @@ public class Area  {
 		}
 	}
 
+
+	public int GetVizinhosPorDificuldade(int d){
+		return vizinhosDificuldade[3+dificuldade];
+	}
+
 }

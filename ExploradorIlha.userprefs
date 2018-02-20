@@ -1,0 +1,23 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Atirador.cs">
+    <Files>
+      <File FileName="Assets\Scripts\FazIlha.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Config.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Tesouro.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\ControleMapa.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\ControleJogador.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Personagem.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Lobo.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Area.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\PopulaIlha.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Dragao.cs" Line="147" Column="82" />
+      <File FileName="Assets\Scripts\Inimigo.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Atirador.cs" Line="82" Column="5" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

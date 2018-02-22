@@ -17,6 +17,7 @@ public class FazIlha : MonoBehaviour {
 
 
 	public float percentAguaInicial = 40;
+	public float percentDifMinInicial = 41;
 	public int largura,altura;
 	public int iteracoes = 5;
 	public int iteracoesDif = 5;
@@ -35,7 +36,7 @@ public class FazIlha : MonoBehaviour {
 	/*** Secao de interface ***/
 
 	public Area[,]  ConstroiIlha() {	
-		mapaIlha = new ConstrutorMapa (largura, altura, iteracoes, iteracoesDif, percentAguaInicial);
+		mapaIlha = new ConstrutorMapa (largura, altura, iteracoes, iteracoesDif, percentAguaInicial, percentDifMinInicial);
 		mapaIlha.matrizMapa = ColocaAreaFinal (mapaIlha.matrizMapa);
 
 		EscolheSpawnJogador (mapaIlha.matrizMapa);
@@ -69,7 +70,7 @@ public class FazIlha : MonoBehaviour {
 
 
 	Area[,] FazMapaTesouroFinal(){
-		mapaTesouroFinal = new ConstrutorMapa (larguraBoss, alturaBoss, iteracoesBoss, 1, percentInicialBoss);
+		mapaTesouroFinal = new ConstrutorMapa (larguraBoss, alturaBoss, iteracoesBoss, 1, percentInicialBoss, percentDifMinInicial);
 		return mapaTesouroFinal.matrizMapa;
 	}
 
@@ -154,7 +155,7 @@ public class FazIlha : MonoBehaviour {
 			int l = linhaInicial;
 
 
-			while (mapa [c, l].tipo == AGUA) {
+			while (mapa [c, l].tipo == AGUA || mapa[c,l].vizinhosDificuldade[Config.DIFICULDADE_SEPARADA1] > 0) {
 				//mapa [c, l].tipo = SPAWN;
 				if (quadrante == 1 || quadrante == 4) {
 					c++;
@@ -182,7 +183,7 @@ public class FazIlha : MonoBehaviour {
 			int l = linhaInicial;
 
 
-			while (mapa [c, l].tipo == AGUA) {
+			while (mapa [c, l].tipo == AGUA || mapa[c,l].vizinhosDificuldade[Config.DIFICULDADE_SEPARADA1] > 0) {
 				//mapa [c, l].tipo = SPAWN;
 				if (quadrante == 1 || quadrante == 2) {
 					l--;
@@ -289,7 +290,7 @@ public class FazIlha : MonoBehaviour {
 public class ConstrutorMapa  {
 	
 
-	float percentAguaInicial;
+	float percentAguaInicial, percentDifMinMinima;
 	int largura,altura;
 	int iteracoes;
 	int iteracoesDif;
@@ -301,10 +302,11 @@ public class ConstrutorMapa  {
 
 	public Area[,] matrizMapa;
 
-	public ConstrutorMapa(int _largura, int _altura, int _iteracoes, int _iteracoesDif, float _percentInicial){
+	public ConstrutorMapa(int _largura, int _altura, int _iteracoes, int _iteracoesDif, float _percentInicial, float _percentDifMinInicial){
 		largura = _largura;
 		altura = _altura;
 		percentAguaInicial = _percentInicial;
+		percentDifMinMinima = _percentDifMinInicial;
 		iteracoes = _iteracoes;
 		iteracoesDif = _iteracoesDif;
 
@@ -386,7 +388,7 @@ public class ConstrutorMapa  {
 
 		matrizMapa [c, l].vizinhosAgua = vizinhos;
 
-		//Se for agua e tiver pelo menos 4 aguas em volta, vira agua.
+		//Se for agua e tiver pelo menos 4 aguas em volta, continua agua.
 		if (matrizMapa [c, l].tipo == 1) {
 			if (vizinhos >= 4) {
 				matrizMapa [c, l].custoAndar = int.MaxValue;
@@ -419,8 +421,8 @@ public class ConstrutorMapa  {
 		int[] vizinhosDif = VizinhosDificuldade (c, l);
 		int atual = matrizMapa [c, l].dificuldade;
 		matrizMapa [c, l].vizinhosDificuldade = vizinhosDif;
-		//Se for agua nao mexe.
-		if (matrizMapa [c, l].tipo == 1 || matrizMapa[c,l].vizinhosAgua >= 3) {
+		//Se for agua ou margem nao mexe.
+		if (matrizMapa [c, l].tipo == FazIlha.AGUA || matrizMapa[c,l].vizinhosAgua >= 3) {
 			return difMin;
 		}
 
@@ -566,9 +568,9 @@ public class ConstrutorMapa  {
 				//Se nao, é agua aleatoriamente.
 				else {
 					if (linha == meioMapa) {
-						matrizMapa [coluna, linha] = new Area (FazIlha.GRAMA, DificuldadeAleatoria());
+						matrizMapa [coluna, linha] = new Area (FazIlha.GRAMA, DificuldadeAleatoria(coluna, linha));
 					} else {
-						matrizMapa [coluna, linha] = AguaAleatoria ();
+						matrizMapa [coluna, linha] = AguaAleatoria (coluna, linha);
 					}
 				}
 
@@ -577,23 +579,39 @@ public class ConstrutorMapa  {
 
 	}
 
-	int DificuldadeAleatoria(){
-		/*
-		int f = UnityEngine.Random.Range(difMin, difMax);
-		f = Mathf.Clamp(f, difMin, difMax);
-		return f;*/
 
-		if (UnityEngine.Random.Range (0, 101) <= percentAguaInicial) {
+
+	int DificuldadeAleatoria(int coluna, int linha){
+
+		float chance = 100;
+		int[] distancias = { coluna, linha, largura - coluna, altura - linha };
+		int menorDistancia = Mathf.Min (distancias);
+		float distanciaBase = altura / 9f; //Valor que define a partir de qual distancia o valor fica sempre minimo.
+
+		if (menorDistancia != 0) {
+			if (menorDistancia >= distanciaBase) {
+				chance = percentDifMinMinima;
+			} else {
+				float max = 80f; //Valor maximo de chance quando distancia > 0
+				chance = max - menorDistancia;
+			}
+		}
+
+
+
+
+
+		if (UnityEngine.Random.Range (0, 101) <= chance) {
 			return difMin;
 		}
 		return UnityEngine.Random.Range(difMin+1, difMax);
 	}
 
-	Area AguaAleatoria(){
+	Area AguaAleatoria(int coluna, int linha){
 		if (UnityEngine.Random.Range (0, 101) <= percentAguaInicial) {
 			return new Area(FazIlha.AGUA, difMin);
 		}
-		return new Area(FazIlha.GRAMA, DificuldadeAleatoria());
+		return new Area(FazIlha.GRAMA, DificuldadeAleatoria(coluna, linha));
 	}
 
 

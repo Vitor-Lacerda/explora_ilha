@@ -19,4 +19,17 @@ public class Config {
 
 	}
 
+
+	//INDICES EM Area.vizinhoDificuldade
+	public const int DIFICULDADE_MAIORES = 0;
+	public const int DIFICULDADE_MENORES = 1;
+	public const int DIFICULDADE_IGUAIS = 2;
+	public const int DIFICULDADE_MEDIA = 3;
+	public const int DIFICULDADE_MINIMA = 4;
+	public const int DIFICULDADE_MATOALTO = 5;
+	public const int DIFICULDADE_SEPARADA1 = 6;
+	public const int DIFICULDADE_SEPARADA2 = 7;
+	public const int DIFICULDADE_FINAL = 8;
+	public const int DIFICULDADE_BOSS = 9;
+
 }

@@ -6,13 +6,15 @@ using System.Linq;
 public class PopulaIlha : MonoBehaviour {
 
 	public Transform playerTransform;
-	public float chanceTesouro = 10f;
-	public float chanceInimigo = 0.8f;
-	public Interactable prefabTesouro;
-	public Personagem prefabOnca;
-	public Personagem prefabAtirador;
-	public Personagem prefabBoss;
-	public Interactable prefabMatoAlto, prefabParede;
+
+
+	[Space(10)]
+	[Header("Pools das areas")]
+	public AreaDataPool poolGrama;
+	public AreaDataPool poolMato;
+	public AreaDataPool poolAreasSeparadas;
+	public AreaDataPool poolBoss;
+
 
 	List<Area> areasGrama, areasMato, areasRuinas, areasBoss;
 
@@ -23,10 +25,7 @@ public class PopulaIlha : MonoBehaviour {
 		areasRuinas = new List<Area> ();
 		areasBoss = new List<Area> ();
 	}
-	
-	void Update(){
-		
-	}
+
 
 	public void Popula(Area[,] mapa, Config.Point spawn){
 		playerTransform.position = new Vector2 (spawn.x, spawn.y);
@@ -37,33 +36,72 @@ public class PopulaIlha : MonoBehaviour {
 		areasBoss = listaMapa.Where (i => i.dificuldade >= 5).ToList();
 
 
-		for (int linha, coluna = 0; coluna < mapa.GetLength(0); coluna++) {
-			for (linha = 0; linha < mapa.GetLength(1); linha++) {
-				ColocaTesouro (mapa, coluna, linha);
-			}
-		}
-		PopulaBoss (mapa);
 		PopulaGramas (mapa);
 		PopulaMatos (mapa);
+		PopulaSeparadas (mapa);
 
 	}
 
-	bool ColocaTesouro(Area[,] mapa, int coluna, int linha){
-		if (mapa[coluna,linha].tipo!= 1 && Random.Range (0f, 101f) <= chanceTesouro) {
-			mapa [coluna, linha].ColocaObjeto (prefabTesouro);
+	/***Metodos pra popular cada area***/
+
+	public void PopulaGramas(Area[,] mapa){
+		foreach (Area a in areasGrama) {
+			if (a.vizinhosDificuldade [Config.DIFICULDADE_MINIMA] + a.vizinhosDificuldade [Config.DIFICULDADE_MATOALTO] <= 7) {
+				ColocaParedes (a, poolGrama);
+			} else {
+				ColocaTesouro (a, poolGrama);
+			}
+		}
+	}
+
+	public void PopulaMatos(Area[,] mapa){
+		foreach (Area a in areasMato) {
+			//ColocaInimigos (a, prefabOnca);
+			ColocaTesouro(a, poolMato);
+			ColocaInimigos (a, poolMato);
+			if (a.vizinhosDificuldade [Config.DIFICULDADE_MENORES] >= 2 || a.vizinhosDificuldade[Config.DIFICULDADE_MAIORES]>= 2) {
+				ColocaParedes (a, poolMato);
+			}
+		}
+	}
+
+	public void PopulaSeparadas(Area[,] mapa){
+		foreach (Area a in areasRuinas) {
+			ColocaTesouro(a, poolAreasSeparadas);
+			ColocaInimigos (a, poolAreasSeparadas);
+		}
+	}
+
+
+
+
+	/***********************************/
+
+
+	/****Metodos que colocam as coisas ***/
+
+	void ColocaParedes(Area a, AreaDataPool pool){
+		Interactable parede = pool.paredeAleatoria();
+		a.ColocaObjeto (parede);
+	}
+
+	bool ColocaTesouro(Area a, AreaDataPool pool){
+		if (a.tipo!= 1 && Random.Range (0f, 101f) <= pool.chanceTesouro) {
+			a.ColocaObjeto (pool.tesouroAleatorio());
 			return true;
 		}
 		return false;
 	}
 
-	bool ColocaInimigos(Area a, Personagem p){
-		if (Random.Range (0f, 101f) <= chanceInimigo) {
-			a.ColocaInimigo (p);
+	bool ColocaInimigos(Area a, AreaDataPool pool){
+		if (Random.Range (0f, 101f) <= pool.chanceInimigo) {
+			a.ColocaInimigo (pool.inimigoAleatorio());
 			return true;
 		}
 		return false;
 	}
 
+	/*
 	public void ColocaDragao(Area[,] mapa, Config.Point pontoBoss){
 		GameObject go = GameObject.Instantiate (prefabBoss.gameObject, new Vector3 (pontoBoss.x, pontoBoss.y, 0), Quaternion.identity);
 		Personagem p = go.GetComponent<Personagem> ();
@@ -74,34 +112,10 @@ public class PopulaIlha : MonoBehaviour {
 		}
 
 	}
+	*/
 
-	public void PopulaGramas(Area[,] mapa){
-		foreach (Area a in areasGrama) {
-			if(a.vizinhosDificuldade[4] + a.vizinhosDificuldade[5] <= 6) {
-				a.ColocaObjeto (prefabParede);
-			}
-		}
-	}
 
-	public void PopulaMatos(Area[,] mapa){
-		foreach (Area a in areasMato) {
-			ColocaInimigos (a, prefabOnca);
-			if (a.vizinhosDificuldade [1] >= 2 || a.vizinhosDificuldade[0]>= 2) {
-				a.ColocaObjeto (prefabMatoAlto);
-			}
-		}
-	}
 
-	public void PopulaBoss(Area[,] mapa){
-		int aberto = 0;
-		foreach (Area a in areasBoss) {
-			if(a.vizinhosDificuldade[1] >=2 && Random.Range(0f,101f)<=100-chanceTesouro) {
-				if (aberto <= 20) {
-					aberto++;
-				} else {
-					a.ColocaObjeto (prefabParede);
-				}
-			}
-		}
-	}
+
+
 }

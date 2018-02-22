@@ -12,7 +12,6 @@ public class ControleMapa : MonoBehaviour {
 	// Use this for initialization
 	void Awake () {
 		matrizFinal = fazIlha.ConstroiIlha ();
-		populaIlha.ColocaDragao (matrizFinal, fazIlha.GetPontoBoss ());
 		populaIlha.Popula (matrizFinal, fazIlha.GetPontoSpawn());
 	}
 

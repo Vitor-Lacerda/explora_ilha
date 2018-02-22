@@ -55,6 +55,17 @@ public class Atirador : Inimigo {
 		spriteRenderer.color = Color.red;
 	}
 
+	public override void TomarDano (int valor)
+	{
+		base.TomarDano (valor);
+		if (vidaAtual <= 0) {
+			foreach (Area a in espacosAtaque) {
+				a.Highlight (false);
+			}
+			espacosAtaque.Clear ();
+		}
+	}
+
 	protected override void FicaAtento (Personagem a)
 	{
 		base.FicaAtento (a);

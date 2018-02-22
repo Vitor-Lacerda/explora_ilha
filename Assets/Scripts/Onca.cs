@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Lobo : Inimigo {
+public class Onca : Inimigo {
 
 
 

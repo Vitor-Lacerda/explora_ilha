@@ -37,8 +37,9 @@ public class FazIlha : MonoBehaviour {
 
 	public Area[,]  ConstroiIlha() {	
 		mapaIlha = new ConstrutorMapa (largura, altura, iteracoes, iteracoesDif, percentAguaInicial, percentDifMinInicial);
-		mapaIlha.matrizMapa = ColocaAreaFinal (mapaIlha.matrizMapa);
-
+		//mapaIlha.matrizMapa = ColocaAreaFinal (mapaIlha.matrizMapa);
+		Vector2 v = PegaPontoInicial(mapaIlha.matrizMapa);
+		pontoBoss = new Config.Point ((int)v.x, (int)v.y);
 		EscolheSpawnJogador (mapaIlha.matrizMapa);
 		DesenhaMapa (mapaIlha);
 
@@ -249,10 +250,20 @@ public class FazIlha : MonoBehaviour {
 				if (matrizMapa [coluna, linha].tipo == GRAMA) {
 					g = Instantiate (prefabGrama, new Vector3 (coluna, linha), Quaternion.identity) as GameObject;
 					matrizMapa [coluna, linha].objetoCena = g;
+
+					RuledTile tile = g.GetComponent<RuledTile> ();
+					if (matrizMapa [coluna, linha].vizinhosAgua == 0) {
+						tile.SpritePadrao ();
+					} else {
+						tile.MudaSprite (construtorMapa.PosVizinhosTipo (coluna, linha, AGUA));
+					}
+
 					//Pinta o nivel de vermelho do tile de acordo com a dificuldade.
 					//1 = 0.2f 5 = 1
 					Color c = g.GetComponent<SpriteRenderer> ().color;
 					c.r = 0.2f * matrizMapa [coluna, linha].dificuldade;
+					c.g = 0.2f * matrizMapa [coluna, linha].dificuldade;
+					c.b = 0.2f * matrizMapa [coluna, linha].dificuldade;
 					g.GetComponent<SpriteRenderer> ().color = c;
 
 					/*
@@ -261,11 +272,11 @@ public class FazIlha : MonoBehaviour {
 					}
 					*/
 
-				} else if (matrizMapa [coluna, linha].tipo == AGUA) {
+				} else /*if(matrizMapa [coluna, linha].tipo == AGUA) */{
 					g = Instantiate (prefabAgua, new Vector3 (coluna, linha), Quaternion.identity) as GameObject;
 					matrizMapa [coluna, linha].objetoCena = g;
 
-				} else if (matrizMapa [coluna, linha].tipo == FINAL) {
+				}/* else if (matrizMapa [coluna, linha].tipo == FINAL) {
 
 					g = Instantiate (prefabAreaFinal, new Vector3 (coluna, linha), Quaternion.identity) as GameObject;
 					matrizMapa [coluna, linha].objetoCena = g;
@@ -276,6 +287,7 @@ public class FazIlha : MonoBehaviour {
 					matrizMapa [coluna, linha].objetoCena = g;
 
 				}
+				*/
 				matrizMapa [coluna, linha].SetSprite( g.GetComponent<SpriteRenderer>());
 
 			}
@@ -458,6 +470,33 @@ public class ConstrutorMapa  {
 
 		f = Mathf.Clamp (f, difMin, difMax);
 		return f;
+	}
+
+	//0 = top. 1= bot, 2= left, 3 = right
+	public bool[] PosVizinhosTipo(int c, int l, int tipo){
+
+		bool[] retorno = { false, false, false, false };
+
+
+		if (DentroMapa (c, l + 1)) {
+			retorno [0] = (matrizMapa [c, l + 1].tipo == tipo);
+		}
+		if (DentroMapa (c, l - 1)) {
+			retorno [1] = (matrizMapa [c, l - 1].tipo == tipo);
+		}
+		if (DentroMapa (c - 1, l)) {
+			retorno [2] = (matrizMapa [c-1, l].tipo == tipo);
+		}
+		if (DentroMapa (c+1, l)) {
+			retorno [3] = (matrizMapa [c+1, l].tipo == tipo);
+		}
+
+
+
+		return retorno;
+
+
+
 	}
 
 	int AguasVizinhas (int c, int l){

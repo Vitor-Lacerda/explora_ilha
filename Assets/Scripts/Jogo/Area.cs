@@ -14,7 +14,7 @@ public class Area  {
 	public GameObject objetoCena;
 	public int bloqueioVisao;
 
-	SpriteRenderer sprite;
+	public SpriteRenderer sprite;
 	Color corInicial;
 
 
@@ -121,6 +121,7 @@ public class Area  {
 		sprite = sr;
 		corInicial = sr.color;
 	}
+
 
 	public void Highlight(bool b){
 		if (b) {
